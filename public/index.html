@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: rgb(0, 30, 60);
+      }
+
+      #form {
+        background-color: #0a1929;
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-b0ox;
+        backdrop-filter: blur(10px);
+      }
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+        background-color: rgb(19, 47, 76);
+        color: #fff;
+      }
+      #input:focus {
+        outline: none;
+      }
+      #form > button {
+        background-color: rgb(0, 89, 178);
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #messages > li {
+        color: rgb(226, 237, 248);
+        background-color: rgb(30, 73, 118) !important;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        margin: 15px 15px 0 15px;
+      }
+
+      .alert {
+        background-color: rgb(0, 89, 178) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form" action=""><input id="input" autocomplete="off" /><button>Send</button></form>
+
+    <script
+      src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+      integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const socket = io()
+
+      const user = prompt('Your name ?')
+
+      document.title = user + ' - ' + document.title
+
+      socket.emit('new_user', user)
+
+      const messages = document.getElementById('messages')
+      const form = document.getElementById('form')
+      const input = document.getElementById('input')
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault()
+
+        if (input.value) {
+          socket.emit('message', { user: user, message: input.value })
+          addMessage(user, input.value, true)
+          input.value = ''
+          input.focus()
+        }
+      })
+
+      socket.on('new_user', function (user) {
+        const item = document.createElement('li')
+        item.innerHTML = `<b>${user}</b> <span style='color:rgb(178, 186, 194)'>joined the chat.</span>`
+        item.classList.add('alert')
+        messages.appendChild(item)
+        window.scrollTo(0, document.body.scrollHeight)
+      })
+
+      socket.on('message', function ({ user, message }) {
+        addMessage(user, message, false)
+      })
+
+      function addMessage(user, message, isYours) {
+        const item = document.createElement('li')
+        item.innerHTML = `<b>${user}</b>: ${message}`
+        if (isYours) item.style.border = '1px solid rgb(80, 144, 211)'
+        messages.appendChild(item)
+        window.scrollTo(0, document.body.scrollHeight)
+      }
+    </script>
+  </body>
+</html>
