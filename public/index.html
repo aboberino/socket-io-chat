@@ -108,6 +108,14 @@
         addMessage(user, message, false)
       })
 
+      socket.on('user_disconnected', function (user) {
+        const item = document.createElement('li')
+        item.innerHTML = `<b>${user}</b> <span style='color:rgb(178, 186, 194)'>disconnected from chat.</span>`
+        item.classList.add('alert')
+        messages.appendChild(item)
+        window.scrollTo(0, document.body.scrollHeight)
+      })
+
       function addMessage(user, message, isYours) {
         const item = document.createElement('li')
         item.innerHTML = `<b>${user}</b>: ${message}`

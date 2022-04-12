@@ -15,9 +15,11 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html')
 })
 
-io.on('connection', (socket) => {
+const users = new Map<string, string>()
 
+io.on('connection', (socket) => {
   socket.on('new_user', (user) => {
+    users.set(socket.id, user)
     socket.broadcast.emit('new_user', user) // send to all clients
   })
 
@@ -26,7 +28,10 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log('user disconnected')
+    if (users.has(socket.id)) {
+      socket.broadcast.emit('user_disconnected', users.get(socket.id))
+      users.delete(socket.id)
+    }
   })
 })
 
