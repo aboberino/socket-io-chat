@@ -10,19 +10,34 @@
         background-color: rgb(0, 30, 60);
       }
 
-      #form {
-        background-color: #0a1929;
-        padding: 0.25rem;
+      #bottomContainer {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
+      }
+
+      #typingMessage {
+        color: rgb(255, 255, 255);
+        background-color: rgb(0, 76, 153);
+        border: 1px solid rgb(0, 127, 255) !important;
+        border-radius: 12px 12px 0 0;
+        padding: 3px 15px;
+        margin: 0 0.5rem;
+        border-bottom: 0px !important;
+        opacity: 0;
+        transition: all 0.2s ease-in-out;
+      }
+
+      #form {
+        background-color: #0a1929;
+        padding: 0.25rem;
         display: flex;
-        height: 3rem;
         box-sizing: border-b0ox;
         backdrop-filter: blur(10px);
       }
       #input {
+        height: 40px;
         border: none;
         padding: 0 1rem;
         flex-grow: 1;
@@ -65,7 +80,13 @@
   </head>
   <body>
     <ul id="messages"></ul>
-    <form id="form" action=""><input id="input" autocomplete="off" /><button>Send</button></form>
+    <div id="bottomContainer">
+      <div id="typingMessage"></div>
+      <form id="form" action="">
+        <input id="input" autocomplete="off" />
+        <button>Send</button>
+      </form>
+    </div>
 
     <script
       src="https://cdn.socket.io/4.4.1/socket.io.min.js"
@@ -84,6 +105,38 @@
       const messages = document.getElementById('messages')
       const form = document.getElementById('form')
       const input = document.getElementById('input')
+      const typingMessage = document.getElementById('typingMessage')
+
+      let typing = false
+      let timeout = undefined
+
+      function timeoutFunction() {
+        typing = false
+        socket.emit('user_isTyping', { user, isTyping: false })
+      }
+
+      input.oninput = () => {
+        if (!typing) {
+          typing = true
+          socket.emit('user_isTyping', { user, isTyping: true })
+          timeout = setTimeout(timeoutFunction, 5000)
+        } else {
+          clearTimeout(timeout)
+          timeout = setTimeout(timeoutFunction, 5000)
+        }
+      }
+
+      socket.on('user_isTyping', ({ user, isTyping }) => {
+        if (isTyping) {
+          // add message on top of the input bar to show that the user is typing
+          typingMessage.innerHTML = `<b>${user}</b> is typing...`
+          typingMessage.style.opacity = 1
+        } else {
+          typingMessage.innerHTML = ''
+          typingMessage.style.opacity = 0
+        }
+      })
+
 
       form.addEventListener('submit', (e) => {
         e.preventDefault()
@@ -96,7 +149,7 @@
         }
       })
 
-      socket.on('new_user', function (user) {
+      socket.on('new_user', (user) => {
         const item = document.createElement('li')
         item.innerHTML = `<b>${user}</b> <span style='color:rgb(178, 186, 194)'>joined the chat.</span>`
         item.classList.add('alert')
@@ -104,11 +157,11 @@
         window.scrollTo(0, document.body.scrollHeight)
       })
 
-      socket.on('message', function ({ user, message }) {
+      socket.on('message', ({ user, message }) => {
         addMessage(user, message, false)
       })
-
-      socket.on('user_disconnected', function (user) {
+      
+      socket.on('user_disconnected', (user) => {
         const item = document.createElement('li')
         item.innerHTML = `<b>${user}</b> <span style='color:rgb(178, 186, 194)'>disconnected from chat.</span>`
         item.classList.add('alert')

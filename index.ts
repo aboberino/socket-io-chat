@@ -24,7 +24,11 @@ io.on('connection', (socket) => {
   })
 
   socket.on('message', ({ user, message }) => {
-    socket.broadcast.emit('message', { user, message }) // send to all clients
+    socket.broadcast.emit('message', { user, message })
+  })
+
+  socket.on('user_isTyping', ({ user, isTyping }) => {
+    socket.broadcast.emit('user_isTyping', { user, isTyping })
   })
 
   socket.on('disconnect', () => {
