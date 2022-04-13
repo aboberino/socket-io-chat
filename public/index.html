@@ -54,9 +54,16 @@
         border: none;
         padding: 0 1rem;
         margin: 0.25rem;
-        border-radius: 3px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
         outline: none;
         color: #fff;
+        transition: all 0.2s ease-in-out;
+      }
+
+      #form > button:hover {
+        background-color: rgb(0, 127, 255);
       }
 
       #messages {
@@ -137,7 +144,6 @@
         }
       })
 
-
       form.addEventListener('submit', (e) => {
         e.preventDefault()
 
@@ -160,7 +166,7 @@
       socket.on('message', ({ user, message }) => {
         addMessage(user, message, false)
       })
-      
+
       socket.on('user_disconnected', (user) => {
         const item = document.createElement('li')
         item.innerHTML = `<b>${user}</b> <span style='color:rgb(178, 186, 194)'>disconnected from chat.</span>`
@@ -172,7 +178,10 @@
       function addMessage(user, message, isYours) {
         const item = document.createElement('li')
         item.innerHTML = `<b>${user}</b>: ${message}`
-        if (isYours) item.style.border = '1px solid rgb(80, 144, 211)'
+        if (isYours) {
+          item.style.border = '1px solid #fff'
+          item.style.boxShadow = 'rgb(0 0 0 / 50%) 0px 4px 20px';
+        }
         messages.appendChild(item)
         window.scrollTo(0, document.body.scrollHeight)
       }
